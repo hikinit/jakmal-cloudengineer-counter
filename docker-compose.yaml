@@ -6,9 +6,11 @@ services:
     environment:
       FASTCGI_PASS: php-fpm:9000
     volumes:
-      - ./src/public:/var/www/html/public
+      - ./public:/var/www/html/public
     ports:
       - ${DOCKER_COMPOSE_NGINX_HOST_PORT}:80
+    depends_on: 
+      - php-fpm
 
   php-fpm:
     build: 
@@ -19,7 +21,7 @@ services:
     user: ${DOCKER_COMPOSE_USER}:${DOCKER_COMPOSE_USER_GROUP}
     env_file: ./infrastructure/php/.env.local
     volumes:
-      - ./src:/var/www/html
+      - ./:/var/www/html
     command: php-fpm
 
   worker:
@@ -32,5 +34,5 @@ services:
     user: ${DOCKER_COMPOSE_USER}:${DOCKER_COMPOSE_USER_GROUP}
     env_file: ./infrastructure/php/.env.local
     volumes:
-      - ./src:/var/www/html
+      - ./:/var/www/html
     command: php artisan queue:work
