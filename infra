@@ -1,0 +1,86 @@
+#!/bin/bash
+
+_program_name=$(basename $0)
+_available_commands=(help init)
+_command=${1:-help}
+
+# Requirements
+_docker_compose_env_file=".env.docker-compose"
+
+# Utilities
+_blank() {
+  [[ -z "$1" ]]
+}
+
+_file_exist() {
+  [[ -f "$1" ]]
+}
+
+_unknown_keyword() {
+  echo "Error: Unknown keyword \"$1\""
+  echo "Run '${_program_name} help' for usage."
+  exit 1
+}
+
+_missing_requirements() {
+  echo "Error: Missing requirement"
+  for req in "$@"; do
+    echo " - ${req}"
+  done
+  exit 1
+}
+
+_docker_compose() {
+  docker-compose --env-file ${_docker_compose_env_file} "$@"
+}
+
+_env_check() {
+  if ! _file_exist ".env"; then
+    echo -n "Creating .env file ... "
+    echo "APP_KEY=" >.env
+    echo "Done"
+  fi
+}
+
+# Commands
+_do_init() {
+  _env_check
+  _docker_compose
+}
+
+_do_help() {
+  ! _blank $@ && _unknown_keyword "$@"
+  echo """
+Counter App Dev Tools
+
+Usage:
+   ${_program_name} [command] [arguments]
+
+Available commands:
+   init                  Initialize the infrastructure for the first time
+   up                    Start the infrastructure
+   down                  Stop infrastructure
+   build [services?]     Build image for all or given services
+   logs [services?]      View logs for all or given services
+   restart [services?]   Restart all or given services
+   sh [service]          Exec sh in the given service
+   artisan [arguments?]  Exec artisan command in the worker service
+   test [arguments?]     Run phpunit in the worker service
+   composer [arguments?] Run composer in the composer service
+   mysql                 Run mysql cli as root in the mysql service
+   redis                 Run redis cli in the redis service
+   help                  Print all the available commands
+"""
+}
+
+# Entrypoint
+_main() {
+  if [[ " ${_available_commands[@]} " =~ " ${_command} " ]]; then
+    _do_${_command} "$@"
+  else
+    _unknown_keyword "${_command}"
+  fi
+}
+
+shift
+_main "$@"
