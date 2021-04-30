@@ -12,51 +12,43 @@ services:
     depends_on: 
       - php-fpm
 
-  php-fpm:
+  php-fpm: &php-base
     build: 
       context: ./infrastructure/php/base
       args:
         PHP_IMAGE: php:8.0.3-fpm-alpine3.13
     image: jakmall/recruitment/cloud-engineer/counter/php-fpm
-    user: "${DOCKER_COMPOSE_USER:?}:${DOCKER_COMPOSE_USER_GROUP:?}"
+    command: php-fpm
+    user: &user "${DOCKER_COMPOSE_USER:?}:${DOCKER_COMPOSE_USER_GROUP:?}"
     env_file: ./infrastructure/php/.env.local
     volumes:
       - ./:/var/www/html
-    command: php-fpm
     depends_on:
       - mysql
       - redis
       - mailhog
 
   worker:
+    <<: *php-base
     build: 
       context: ./infrastructure/php/base
       args:
         PHP_IMAGE: php:8.0.3-cli-alpine3.13
         ADDITIONAL_EXTENSIONS: opcache
     image: jakmall/recruitment/cloud-engineer/counter/php-cli
-    user: "${DOCKER_COMPOSE_USER:?}:${DOCKER_COMPOSE_USER_GROUP:?}"
-    env_file: ./infrastructure/php/.env.local
-    volumes:
-      - ./:/var/www/html
     command: php artisan queue:work
     labels:
       ofelia.enabled: "true"
       ofelia.job-exec.datecron.schedule: "@every 1m"
       ofelia.job-exec.datecron.command: "php artisan schedule:run"
-    depends_on:
-      - mysql
-      - redis
-      - mailhog
   
   scheduler:
     image: mcuadros/ofelia:v0.3.4
-    depends_on:
-      - worker
     command: daemon --docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    
+    depends_on:
+      - worker
 
   mailhog:
     image: mailhog/mailhog:v1.0.1
@@ -66,10 +58,10 @@ services:
   mysql:
     image: mysql:8.0.23
     environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-      MYSQL_DATABASE: counter
-      MYSQL_USER: counter_app
-      MYSQL_PASSWORD: secret
+      MYSQL_ALLOW_EMPTY_PASSWORD: ${DOCKER_COMPOSE_MYSQL_EMPTY_PASSWORD}
+      MYSQL_DATABASE: ${DOCKER_COMPOSE_MYSQL_DATABASE}
+      MYSQL_USER: ${DOCKER_COMPOSE_MYSQL_USER}
+      MYSQL_PASSWORD: ${DOCKER_COMPOSE_MYSQL_PASSWORD}
     volumes:
       - mysql-data:/var/lib/mysql
   
@@ -80,6 +72,7 @@ services:
   
   composer:
     image: composer:2.0.11
+    user: *user
     volumes:
       - ./:/app
 
