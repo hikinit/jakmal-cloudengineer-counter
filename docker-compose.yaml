@@ -9,3 +9,28 @@ services:
       - ./src/public:/var/www/html/public
     ports:
       - ${DOCKER_COMPOSE_NGINX_HOST_PORT}:80
+
+  php-fpm:
+    build: 
+      context: ./infrastructure/php/base
+      args:
+        PHP_IMAGE: php:8.0.3-fpm-alpine3.13
+    image: jakmall/recruitment/cloud-engineer/counter/php-fpm
+    user: ${DOCKER_COMPOSE_USER}:${DOCKER_COMPOSE_USER_GROUP}
+    env_file: ./infrastructure/php/.env.local
+    volumes:
+      - ./src:/var/www/html
+    command: php-fpm
+
+  worker:
+    build: 
+      context: ./infrastructure/php/base
+      args:
+        PHP_IMAGE: php:8.0.3-cli-alpine3.13
+        ADDITIONAL_EXTENSIONS: opcache
+    image: jakmall/recruitment/cloud-engineer/counter/php-cli
+    user: ${DOCKER_COMPOSE_USER}:${DOCKER_COMPOSE_USER_GROUP}
+    env_file: ./infrastructure/php/.env.local
+    volumes:
+      - ./src:/var/www/html
+    command: php artisan queue:work
