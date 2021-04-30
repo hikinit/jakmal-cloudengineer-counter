@@ -23,6 +23,10 @@ services:
     volumes:
       - ./:/var/www/html
     command: php-fpm
+    depends_on:
+      - mysql
+      - redis
+      - mailhog
 
   worker:
     build: 
@@ -40,6 +44,10 @@ services:
       ofelia.enabled: "true"
       ofelia.job-exec.datecron.schedule: "@every 1m"
       ofelia.job-exec.datecron.command: "php artisan schedule:run"
+    depends_on:
+      - mysql
+      - redis
+      - mailhog
   
   scheduler:
     image: mcuadros/ofelia:v0.3.4
