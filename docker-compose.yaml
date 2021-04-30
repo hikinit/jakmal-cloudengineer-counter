@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3.3"
 services:
   nginx:
     build: ./infrastructure/nginx/base
@@ -36,6 +36,19 @@ services:
     volumes:
       - ./:/var/www/html
     command: php artisan queue:work
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.datecron.schedule: "@every 1m"
+      ofelia.job-exec.datecron.command: "php artisan schedule:run"
+  
+  scheduler:
+    image: mcuadros/ofelia:v0.3.4
+    depends_on:
+      - worker
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    
 
   mailhog:
     image: mailhog/mailhog:v1.0.1
