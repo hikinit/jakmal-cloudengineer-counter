@@ -15,5 +15,5 @@ FROM jakmall/recruitment/cloud-engineer/counter/php-fpm
 
 COPY --from=build /app/ /var/www/html
 
-COPY entrypoint.sh /usr/local/bin
-ENTRYPOINT ["entrypoint.sh"]
+COPY php-entrypoint.sh /usr/local/bin
+ENTRYPOINT ["php-entrypoint.sh"]
