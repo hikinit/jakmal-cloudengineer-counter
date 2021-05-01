@@ -1,5 +1,7 @@
 #!/bin/bash
 # Docker-compose wrapper for easy deployment
+set -e
+trap EXIT
 
 # Variables
 _program_name=$(basename $0)
