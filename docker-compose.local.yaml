@@ -3,5 +3,6 @@ services:
   php-fpm: &php-base
     volumes:
       - ./:/var/www/html
+
   worker:
     <<: *php-base

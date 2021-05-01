@@ -19,7 +19,7 @@ services:
         PHP_IMAGE: php:8.0.3-fpm-alpine3.13
     image: jakmall/recruitment/cloud-engineer/counter/php-fpm
     command:
-      - wait-for-it.sh
+      - wait-for
       - mysql:3306
       - --
       - php-fpm
@@ -39,7 +39,7 @@ services:
         ADDITIONAL_EXTENSIONS: opcache
     image: jakmall/recruitment/cloud-engineer/counter/php-cli
     command:
-      - wait-for-it.sh
+      - wait-for
       - mysql:3306
       - --
       - php
