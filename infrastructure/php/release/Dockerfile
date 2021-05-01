@@ -10,14 +10,15 @@ RUN composer dump-autoload \
   && php artisan route:cache \
   && php artisan view:cache \
   && chown -R www-data:www-data bootstrap/cache storage \
-  && mv php-entrypoint.sh /usr/local/bin
+  && mv infrastructure/php/release/entrypoint.sh /usr/local/bin \
+  && rm -rf infrastructure
 
 # Final image
 ARG PHP_IMAGE
 FROM $PHP_IMAGE
 FROM jakmall/recruitment/cloud-engineer/counter/php-fpm
 
-COPY --from=build /usr/local/bin/php-entrypoint.sh /usr/local/bin
+COPY --from=build /usr/local/bin/entrypoint.sh /usr/local/bin
 COPY --from=build /app/ /var/www/html
 
-ENTRYPOINT ["php-entrypoint.sh"]
+ENTRYPOINT ["entrypoint.sh"]
