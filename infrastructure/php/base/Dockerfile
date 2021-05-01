@@ -12,5 +12,4 @@ RUN rm $PHP_INI_DIR/php.ini-development \
   && pecl install redis \
   && docker-php-ext-enable redis \
   && docker-php-ext-install bcmath pdo_mysql $ADDITIONAL_EXTENSIONS \
-  && apk del .build-deps \
-  && rm wait-for-it.sh
+  && apk del .build-deps
