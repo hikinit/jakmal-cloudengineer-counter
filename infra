@@ -101,6 +101,11 @@ _env_check() {
   fi
 }
 
+_set_env() {
+  export DOCKER_COMPOSE_INFRA_ENV="$1"
+  echo "Set infra environment to $1"
+}
+
 # Commands
 _do_init() {
   _no_argument "$@"
@@ -166,12 +171,12 @@ _do_redis() {
 
 _do_release() {
   _no_argument "$@"
-  export DOCKER_COMPOSE_INFRA_ENV="release"
+  _set_env "release"
 }
 
 _do_local() {
   _no_argument "$@"
-  export DOCKER_COMPOSE_INFRA_ENV="local"
+  _set_env "local"
 }
 
 _do_help() {
