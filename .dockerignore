@@ -17,6 +17,7 @@
 /test
 /vendor
 /infrastructure
+!/infrastructure/php/release/entrypoint.sh
 /storage/**/*.*
 
 **/*.md
