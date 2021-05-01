@@ -114,7 +114,7 @@ _do_init() {
   _do_build
   _do_up
 
-  if is_env "local"; then
+  if _is_env "local"; then
     _do_artisan "key:generate"
     _docker_compose_exec \
       "worker" \
