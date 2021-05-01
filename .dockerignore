@@ -1,0 +1,9 @@
+bootstrap/cache/*
+docs
+test
+vendor
+infrastructure
+
+**/*.md
+**/*.sqlite
+**/.*
