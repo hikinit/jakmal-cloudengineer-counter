@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: ./infrastructure/nginx/release/Dockerfile
     image: jakmall/recruitment/cloud-engineer/counter/nginx/release
+    volumes: []
 
   php-fpm:
     build: 
@@ -13,6 +14,8 @@ services:
       args:
         PHP_IMAGE: jakmall/recruitment/cloud-engineer/counter/php-fpm
     image: jakmall/recruitment/cloud-engineer/counter/php-fpm/release
+    user: &user www-data:www-data
+    volumes: []
   
   worker:
     build: 
@@ -21,3 +24,5 @@ services:
       args:
         PHP_IMAGE: jakmall/recruitment/cloud-engineer/counter/php-cli
     image: jakmall/recruitment/cloud-engineer/counter/php-cli/release
+    user: *user
+    volumes: []
