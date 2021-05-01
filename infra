@@ -6,9 +6,10 @@ _program_name=$(basename $0)
 _available_commands=(
   init up down build logs restart sh
   artisan test composer mysql redis help
+  release "local"
 )
 _command=${1:-help}
-_docker_compose_env_file=".env.docker-compose"
+_docker_compose_infra_env=${DOCKER_COMPOSE_INFRA_ENV:-local}
 
 # Utilities
 _blank() {
@@ -70,7 +71,16 @@ _docker_compose() {
       " - DOCKER_COMPOSE_USER is not set" \
       " - DOCKER_COMPOSE_USER_GROUP is not set"
   fi
-  docker-compose --env-file "${_docker_compose_env_file}" "$@"
+
+  if ! [[ " local release " =~ " ${_docker_compose_infra_env} " ]]; then
+    _throw_error "Set DOCKER_COMPOSE_INFRA_ENV to local or release"
+  fi
+
+  docker-compose \
+    --file "docker-compose.yaml" \
+    --file "docker-commpose.${_docker_compose_infra_env}.yaml" \
+    --env-file ".env.docker-compose" \
+    "$@"
 }
 
 _docker_compose_run() {
@@ -154,10 +164,20 @@ _do_redis() {
   _docker_compose_exec "redis" "redis-cli"
 }
 
+_do_release() {
+  _no_argument "$@"
+  export DOCKER_COMPOSE_INFRA_ENV="release"
+}
+
+_do_local() {
+  _no_argument "$@"
+  export DOCKER_COMPOSE_INFRA_ENV="local"
+}
+
 _do_help() {
   _no_argument "$@"
   echo """
-Counter App Dev Tools
+Counter App Dev Tools [${_docker_compose_infra_env}]
 
 Usage:
    ${_program_name} [command] [arguments]
@@ -176,6 +196,8 @@ Available commands:
    mysql                 Run mysql cli as root in the mysql service
    redis                 Run redis cli in the redis service
    help                  Print all the available commands
+   release               Use release image
+   local                 Use local image
 """
 }
 
