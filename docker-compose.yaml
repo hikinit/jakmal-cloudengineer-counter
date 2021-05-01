@@ -18,7 +18,11 @@ services:
       args:
         PHP_IMAGE: php:8.0.3-fpm-alpine3.13
     image: jakmall/recruitment/cloud-engineer/counter/php-fpm
-    command: php-fpm
+    command:
+      - wait-for-it.sh
+      - mysql:3306
+      - --
+      - php-fpm
     user: &user "${DOCKER_COMPOSE_USER:?}:${DOCKER_COMPOSE_USER_GROUP:?}"
     env_file: ./infrastructure/php/.env.local
     depends_on:
@@ -34,7 +38,13 @@ services:
         PHP_IMAGE: php:8.0.3-cli-alpine3.13
         ADDITIONAL_EXTENSIONS: opcache
     image: jakmall/recruitment/cloud-engineer/counter/php-cli
-    command: php artisan queue:work
+    command:
+      - wait-for-it.sh
+      - mysql:3306
+      - --
+      - php
+      - artisan
+      - queue:work
     labels:
       ofelia.enabled: "true"
       ofelia.job-exec.datecron.schedule: "@every 1m"
