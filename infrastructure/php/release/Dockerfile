@@ -4,10 +4,10 @@ COPY composer.json composer.lock ./
 RUN composer install -vvv --no-dev --ignore-platform-reqs --no-scripts 
 
 COPY . .
-RUN composer dump-autoload && php artisan route:cache && php artisan view:cache
-
-ONBUILD RUN chown -R www-data:www-data bootstrap/cache storage
-
+RUN composer dump-autoload \
+  && php artisan route:cache \
+  && php artisan view:cache \
+  && chown -R www-data:www-data bootstrap/cache storage
 
 #ARG PHP_IMAGE
 #FROM $PHP_IMAG
@@ -15,5 +15,5 @@ FROM jakmall/recruitment/cloud-engineer/counter/php-fpm
 
 COPY --from=build /app/ /var/www/html
 
-COPY infrastructure/php/release/entrypoint.sh .
-ENTRYPOINT ["php", "artisan", "config:cache"]
+COPY infrastructure/php/release/entrypoint.sh /usr/local/bin
+ENTRYPOINT ["entrypoint.sh"]
