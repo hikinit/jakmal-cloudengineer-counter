@@ -1,10 +1,12 @@
 #!/bin/bash
 
+# Variables
 _program_name=$(basename $0)
-_available_commands=(help init)
+_available_commands=(
+  init up down build logs restart sh
+  artisan test composer mysql redis help
+)
 _command=${1:-help}
-
-# Requirements
 _docker_compose_env_file=".env.docker-compose"
 
 # Utilities
@@ -16,22 +18,49 @@ _file_exist() {
   [[ -f "$1" ]]
 }
 
-_unknown_keyword() {
-  echo "Error: Unknown keyword \"$1\""
-  echo "Run '${_program_name} help' for usage."
+_throw_error() {
+  local _message=$1
+  shift
+
+  echo "Error: ${_message}"
+
+  for _error in "$@"; do
+  echo "${_error}"
+  done
+
+  "Run '${_program_name} help' for usage."
   exit 1
 }
 
-_missing_requirements() {
-  echo "Error: Missing requirement"
-  for req in "$@"; do
-    echo " - ${req}"
-  done
-  exit 1
+_argument_exceed() {
+  local _expected=$1
+  local _passed=$2
+  local _message=$3
+
+  if [[ ${_passed} -gt ${_expected} ]]; then
+    _throw_error "Expected ${_expected} argument, ${_passed} given. ${_message}"
+  fi
+}
+
+_no_argument() {
+  _argument_exceed 0 $# "Not required keyword '$@'"
 }
 
 _docker_compose() {
+  if _blank "${DOCKER_COMPOSE_USER}" && _blank "${DOCKER_COMPOSE_USER_GROUP}"; then
+    _throw_error "Missing environment variables" \
+      "- DOCKER_COMPOSE_USER is not set" \
+      "- DOCKER_COMPOSE_USER_GROUP is not set"
+  fi
   docker-compose --env-file ${_docker_compose_env_file} "$@"
+}
+
+_docker_compose_run() {
+  _docker_compose "run" "$@"
+}
+
+_docker_compose_exec() {
+  _docker_compose "exec" "$@"
 }
 
 _env_check() {
@@ -44,12 +73,67 @@ _env_check() {
 
 # Commands
 _do_init() {
+  _no_argument "$@"
   _env_check
-  _docker_compose
+  _do_composer "install"
+  _do_build
+  _do_up
+  _do_artisan "key:generate"
+  _do_artisan "migrate"
+}
+
+_do_up() {
+  _no_argument "$@"
+  _docker_compose "up" "-d"
+}
+
+_do_down() {
+  _no_argument "$@"
+  _docker_compose "down"
+}
+
+_do_build() {
+  _docker_compose "build" "$@"
+}
+
+_do_logs() {
+  _docker_compose "logs" "$@"
+}
+
+_do_restart() {
+  _docker_compose "restart" "$@"
+}
+
+_do_sh() {
+  _blank "$1" && _throw_error "Missing service name"
+  _argument_exceed 1 $#
+  _docker_compose_exec "$1" "sh"
+}
+
+_do_artisan() {
+  _docker_compose_exec "worker" "php" "artisan" "$@"
+}
+
+_do_test() {
+  _docker_compose_exec "worker" "vendor/bin/phpunit" "$@"
+}
+
+_do_composer() {
+  _docker_compose_run "--rm" "composer" "$@"
+}
+
+_do_mysql() {
+  _no_argument "$@"
+  _docker_compose_exec "mysql" "mysql" "-u" "root"
+}
+
+_do_redis() {
+  _no_argument "$@"
+  _docker_compose_exec "redis" "redis-cli"
 }
 
 _do_help() {
-  ! _blank $@ && _unknown_keyword "$@"
+  _no_argument "$@"
   echo """
 Counter App Dev Tools
 
@@ -78,7 +162,7 @@ _main() {
   if [[ " ${_available_commands[@]} " =~ " ${_command} " ]]; then
     _do_${_command} "$@"
   else
-    _unknown_keyword "${_command}"
+    _throw_error "Unknown keyword: '${_command}'"
   fi
 }
 
