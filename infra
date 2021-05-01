@@ -28,7 +28,7 @@ _throw_error() {
   echo "${_error}"
   done
 
-  "Run '${_program_name} help' for usage."
+  echo "Run '${_program_name} help' for usage."
   exit 1
 }
 
