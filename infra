@@ -87,7 +87,7 @@ _docker_compose_exec() {
   _docker_compose "exec" "$@"
 }
 
-_env_check() {
+_check_env_file() {
   if ! _file_exist ".env"; then
     echo -n "Creating .env file ... "
     echo "APP_KEY=" >.env
@@ -100,17 +100,22 @@ _set_env() {
   echo "Set infra environment to $1"
 }
 
+_is_env() {
+  [[ "$(< .infra-env)" == "$1" ]]
+}
+
 # Commands
 _do_init() {
   _no_argument "$@"
-  _env_check
-  _do_composer "install"
+  _check_env_file
+
+  _is_env "local" && _do_composer "install"
+
   _do_build
   _do_up
 
-  if [[ "$(< .infra-env)" == "local" ]]; then
+  if is_env "local"; then
     _do_artisan "key:generate"
-
     _docker_compose_exec \
       "worker" \
       "wait-for" \
