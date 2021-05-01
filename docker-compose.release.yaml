@@ -1,0 +1,23 @@
+version: "3.3"
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: ./infrastructure/nginx/release/Dockerfile
+    image: jakmall/recruitment/cloud-engineer/counter/nginx/release
+
+  php-fpm:
+    build: 
+      context: .
+      dockerfile: ./infrastructure/php/release/Dockerfile
+      args:
+        PHP_IMAGE: jakmall/recruitment/cloud-engineer/counter/php-fpm
+    image: jakmall/recruitment/cloud-engineer/counter/php-fpm/release
+  
+  worker:
+    build: 
+      context: .
+      dockerfile: ./infrastructure/php/release/Dockerfile
+      args:
+        PHP_IMAGE: jakmall/recruitment/cloud-engineer/counter/php-cli
+    image: jakmall/recruitment/cloud-engineer/counter/php-cli/release
