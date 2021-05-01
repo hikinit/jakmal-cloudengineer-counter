@@ -38,7 +38,7 @@ _argument_exceed() {
   local _message=$3
 
   if [[ ${_passed} -gt ${_expected} ]]; then
-    _throw_error "Expected ${_expected} argument, ${_passed} given. ${_message}"
+    _throw_error "Expected ${_expected} argument, ${_passed} given. ${_message}."
   fi
 }
 
@@ -48,9 +48,9 @@ _no_argument() {
 
 _docker_compose() {
   if _blank "${DOCKER_COMPOSE_USER}" && _blank "${DOCKER_COMPOSE_USER_GROUP}"; then
-    _throw_error "Missing environment variables" \
-      "- DOCKER_COMPOSE_USER is not set" \
-      "- DOCKER_COMPOSE_USER_GROUP is not set"
+    _throw_error "Missing environment variables." \
+      " - DOCKER_COMPOSE_USER is not set" \
+      " - DOCKER_COMPOSE_USER_GROUP is not set"
   fi
   docker-compose --env-file ${_docker_compose_env_file} "$@"
 }
@@ -162,7 +162,7 @@ _main() {
   if [[ " ${_available_commands[@]} " =~ " ${_command} " ]]; then
     _do_${_command} "$@"
   else
-    _throw_error "Unknown keyword: '${_command}'"
+    _throw_error "Unknown command: '${_command}'"
   fi
 }
 
