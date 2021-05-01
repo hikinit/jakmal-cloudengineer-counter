@@ -1,4 +1,5 @@
 # Build image
+ARG PHP_IMAGE
 FROM composer:2.0.11 as build
 
 COPY composer.json composer.lock ./
