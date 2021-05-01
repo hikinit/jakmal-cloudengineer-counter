@@ -9,7 +9,6 @@ _available_commands=(
   release "local"
 )
 _command=${1:-help}
-_docker_compose_infra_env=${DOCKER_COMPOSE_INFRA_ENV:-local}
 
 # Utilities
 _blank() {
@@ -72,13 +71,10 @@ _docker_compose() {
       " - DOCKER_COMPOSE_USER_GROUP is not set"
   fi
 
-  if ! [[ " local release " =~ " ${_docker_compose_infra_env} " ]]; then
-    _throw_error "Set DOCKER_COMPOSE_INFRA_ENV to local or release"
-  fi
-
+  local _infra_env=$(< .infra-env)
   docker-compose \
     --file "docker-compose.yaml" \
-    --file "docker-commpose.${_docker_compose_infra_env}.yaml" \
+    --file "docker-compose.${_infra_env}.yaml" \
     --env-file ".env.docker-compose" \
     "$@"
 }
@@ -96,13 +92,11 @@ _env_check() {
     echo -n "Creating .env file ... "
     echo "APP_KEY=" >.env
     echo "Done"
-  else
-    _confirm "The infrastructure is already deployed. Are you sure you want to continue?"
   fi
 }
 
 _set_env() {
-  export DOCKER_COMPOSE_INFRA_ENV="$1"
+  echo $1 > .infra-env
   echo "Set infra environment to $1"
 }
 
@@ -182,7 +176,7 @@ _do_local() {
 _do_help() {
   _no_argument "$@"
   echo """
-Counter App Dev Tools [${_docker_compose_infra_env}]
+Counter App Dev Tools [$(< .infra-env)]
 
 Usage:
    ${_program_name} [command] [arguments]
@@ -208,6 +202,8 @@ Available commands:
 
 # Entrypoint
 _main() {
+  ! _file_exist ".infra-env" && _set_env "local" &> /dev/null
+
   if [[ " ${_available_commands[@]} " =~ " ${_command} " ]]; then
     _do_${_command} "$@"
   else
