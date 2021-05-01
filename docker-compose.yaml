@@ -73,3 +73,7 @@ services:
     user: *user
     volumes:
       - ./:/app
+
+volumes:
+  mysql-data:
+  redis-data:
