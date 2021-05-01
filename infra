@@ -108,7 +108,15 @@ _do_init() {
   _do_build
   _do_up
   _do_artisan "key:generate"
-  _do_artisan "migrate"
+
+  _docker_compose_exec \
+    "worker" \
+    "wait-for" \
+    "mysql:3306" \
+    "--" \
+    "php" \
+    "artisan" \
+    "migrate"
 }
 
 _do_up() {
