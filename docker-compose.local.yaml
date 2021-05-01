@@ -1,0 +1,7 @@
+version: "3.3"
+services:
+  php-fpm: &php-base
+    volumes:
+      - ./:/var/www/html
+  worker:
+    <<: *php-base

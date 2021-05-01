@@ -21,8 +21,6 @@ services:
     command: php-fpm
     user: &user "${DOCKER_COMPOSE_USER:?}:${DOCKER_COMPOSE_USER_GROUP:?}"
     env_file: ./infrastructure/php/.env.local
-    volumes:
-      - ./:/var/www/html
     depends_on:
       - mysql
       - redis
@@ -75,7 +73,3 @@ services:
     user: *user
     volumes:
       - ./:/app
-
-volumes:
-  mysql-data:
-  redis-data:
